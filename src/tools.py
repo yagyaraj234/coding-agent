@@ -1,11 +1,13 @@
 import os
+import json
 
-
-def run_command(command: str) -> str:
+def run_command(item:dict):
     """"Run commands in a shell."""
-    print(f"Running command: {command}")
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(os.path.join(BASE_DIR, ".."))
+    command = item["command"]
+    # os.system("cd ../")
+    if not command:
+        raise ValueError("Command is required to run.")
+    # os.system(f"cd ../codegen && {command}")
     os.system(command)
     return command
 
