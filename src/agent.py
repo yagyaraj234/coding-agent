@@ -1,12 +1,10 @@
 import json
 from openai import OpenAI
 from prompt import SYSTEM_PROMPT
-from tools import run_command
+from tools import run_command,get_file_content
 from dotenv import load_dotenv
 
 load_dotenv()
-
-
 
 client = OpenAI()
 
@@ -14,7 +12,12 @@ available_tools = {
     "run_command":{
         "fn": run_command,
         "description": "Run a command in the shell",
+    },
+    "get_file_content":{
+        "fn": get_file_content,
+        "description": "Get the content of a file",
     }
+ 
 }
 
 messages = [{
@@ -22,12 +25,13 @@ messages = [{
     "content": SYSTEM_PROMPT
 }]
 
-user_input= input(">")
+user_input= input("> ")
 
 messages.append({
         "role": "user",
         "content": user_input
     })
+
 while True:
     
     response = client.chat.completions.create(
@@ -37,24 +41,21 @@ while True:
     )
 
     output = json.loads(response.choices[0].message.content)
-    print("Output:", output)
+    # print("Output:", output)
     messages.append({
         "role": "assistant",
         "content": json.dumps(output)
     })
 
     if(output.get("state") == "FINALIZE"):
-        continue_input = input("Is there anything else you would like me to do? (y/n) ")
 
-        if continue_input.lower() == "n":
-            break
-        else:
-            next_input = input(">")
-            messages.append({
+        print("ai : ",output.get("output"))
+        next_input = input("> ")
+        messages.append({
                 "role": "user",
                 "content": json.dumps({"state":"START", "input": next_input})
             })
-            continue
+        continue
     
     if(output.get("state") == "ACT"):
         fn = output.get("tool")
